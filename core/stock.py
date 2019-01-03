@@ -38,7 +38,7 @@ class Stock(StockReader):
 
     @property
     def beta(self):
-    	self._beta = round(self.get_beta(),2)
+    	self._beta = round(self.get_beta(), 2)
     	return self._beta
 
     @property
