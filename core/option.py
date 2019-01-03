@@ -27,6 +27,7 @@ class Option(Robinhood):
     @property
     def strike(self):
         self._strike = self.args['strike_price']
+        return self._strike
 
     @property
     def expiration(self):
@@ -85,11 +86,3 @@ class OptionPositions(Robinhood):
     def get_records(self):
         #schema = positions/id/data
         return {option.id : option.data for option in self.options}
-
-class OptionsChain(Robinhood):
-    def __init__(self, ticker_symbol, expiration, type = 'call'):
-        Robinhood.__init__(self)
-        self.ticker_symbol = ticker_symbol
-        self.expiration = expiration
-        self.chain_type = type
-        self.options = [Option(option) for option in self.get_options(ticker_symbol, expiration, type)]

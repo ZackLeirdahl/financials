@@ -22,3 +22,16 @@ class DataBridge(Firebase):
         records = positions.get_records()
         for k,v in records.items():
             self.add_document('positions', k, v)
+
+    def update_option_positions(self):
+        positions = OptionPositions()
+        records = positions.get_records()
+        current = self.get_documents('positions')
+        for i in range(len(current)):
+            if current[i] not in records.keys():
+                self.remove_document('positions', current[i])
+        for k,v in records.items():
+            if k not in current:
+                self.add_document('positions', k, v)
+            else:
+                self.update_document('positions', k, v)
