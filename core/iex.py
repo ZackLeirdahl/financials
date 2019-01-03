@@ -278,6 +278,12 @@ class StockReader(_IEXBase):
         data = self._get_endpoint("splits", kwargs)
         return {symbol: data[symbol]["splits"] for symbol in list(data)}
 
+    def get_historical_volatility(self, **kwargs):
+        import numpy as np
+        data = pd.DataFrame(self.get_chart(range='1y'))
+        log_return = np.log(data['close'] / data['close'].shift(1))
+        return round(np.sqrt(log_return.apply(lambda x: (x-log_return.mean())**2).mean()) * np.sqrt(252),4)
+
     def get_time_series(self, **kwargs):
         return self.get_chart()
 

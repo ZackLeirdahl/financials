@@ -72,4 +72,7 @@ class Stock(StockReader):
         self._data = {p: getattr(self, p) for p in self._properties}
         return self._data
 
-    _properties =  ['name','sector','industry','exchange','beta','short_date','short_interest','shares_outstanding','market_cap']#'historical_volatility',
+    _properties =  ['name','sector','industry','exchange','beta','short_date','short_interest','shares_outstanding','market_cap','historical_volatility']
+
+s = Stock('AMD')
+print(s.data)
