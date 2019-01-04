@@ -223,7 +223,7 @@ class Robinhood:
         return self.session.get(positions(), timeout=15).json()
 
     def securities_owned(self):
-        return self.session.get(positions() + '?nonzero=true', timeout=15).json()
+        return self.session.get(positions() + '?nonzero=true', timeout=15).json()['results']
 
     def get_options_positions(self, results = []):
         for res in self.session.get(option_positions(),timeout=15).json()['results']:

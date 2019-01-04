@@ -76,13 +76,3 @@ class Option(Robinhood):
         return self._data
 
     _properties =  ['type','expiration','strike','mark','implied_volatility','open_interest','volume','delta','gamma','theta']
-
-class OptionPositions(Robinhood):
-    def __init__(self):
-        Robinhood.__init__(self)
-        self.urls = self.get_options_positions()
-        self.options = [Option(self.get_url(url)) for url in self.urls]
-
-    def get_records(self):
-        #schema = positions/id/data
-        return {option.id : option.data for option in self.options}

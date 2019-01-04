@@ -79,6 +79,3 @@ class Stock(StockReader):
         return self._data
 
     _properties =  ['name','sector','industry','exchange','beta','short_date','short_interest','shares_outstanding','market_cap','historical_volatility', 'technicals']
-
-s = Stock('AMD')
-print(s.data)
