@@ -69,7 +69,7 @@ class Stock(StockReader):
 
     @property
     def technicals(self):
-        self._technicals = {'MA 50': self.get_moving_average(50), 'MA 100': self.get_moving_average(100)}
+        self._technicals = self.get_technicals()
         return self._technicals
 
     @property
@@ -79,3 +79,6 @@ class Stock(StockReader):
         return self._data
 
     _properties =  ['name','sector','industry','exchange','beta','short_date','short_interest','shares_outstanding','market_cap','historical_volatility', 'technicals']
+
+s = Stock('AMD')
+print(s.data)

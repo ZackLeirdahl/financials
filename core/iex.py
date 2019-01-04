@@ -363,6 +363,9 @@ class StockReader(_IEXBase):
     def get_moving_average(self, n):
         return round(list(pd.Series.rolling(pd.DataFrame(self.get_chart(range = '1y'))['close'], n).mean())[-1],2)
 
+    def get_technicals(self):
+        return {'MA 20': self.get_moving_average(20), 'MA 50': self.get_moving_average(50), 'MA 100': self.get_moving_average(100), 'MA 200': self.get_moving_average(200), '52 High': self.get_years_high(), '52 Low': self.get_years_low()}
+
 class HistoricalReader(_IEXBase):
     def __init__(self, symbols, start, end, output_format='json', **kwargs):
         if isinstance(symbols, list) and len(symbols) > 1:
