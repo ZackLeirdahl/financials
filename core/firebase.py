@@ -3,7 +3,7 @@ from firebase_admin import credentials, firestore
 
 class Firebase:
 	def __init__(self):
-		firebase_admin.initialize_app(credentials.Certificate(os.path.join('\\'.join(os.path.dirname(__file__).split('\\')[:len(os.path.dirname(__file__).split('\\')) -1]) + '\\credentials','trader-3870e-firebase-adminsdk-ht79b-863abdb2e1.json')), {'projectId':'trader-3870e'})
+		firebase_admin.initialize_app(credentials.Certificate(os.path.join('/'.join(os.path.dirname(__file__).split('/')[:len(os.path.dirname(__file__).split('/')) -1]) + '/credentials','trader-3870e-firebase-adminsdk-ht79b-863abdb2e1.json')), {'projectId':'trader-3870e'})
 		self.db = firestore.client()
 
 	def add_document(self, collection, key, data):
