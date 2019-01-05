@@ -3,7 +3,7 @@ class Option(Robinhood):
     def __init__(self, args):
         Robinhood.__init__(self)
         if type(args) == dict: self.args = args
-        else: self.args = self.get_url("https://api.robinhood.com/options/instruments/" + args)
+        else: self.args = self.get_url(args)
         self.ticker_symbol = self.args['chain_symbol']
         self.id = self.args['id']
         self.details = None

@@ -227,7 +227,7 @@ class Robinhood:
 
     def get_options_positions(self, results = []):
         for res in self.session.get(option_positions(),timeout=15).json()['results']:
-            if float(res['quantity']) > 0: results.append(res['option'])
+            if float(res['quantity']) > 0: results.append(res)
         return results
 
 def option_positions():
@@ -280,6 +280,9 @@ def portfolios():
 
 def positions():
     return "https://api.robinhood.com/positions/"
+
+def option_position():
+    return "https://api.robinhood.com/options/instruments/"
 
 def quotes():
     return "https://api.robinhood.com/quotes/"
