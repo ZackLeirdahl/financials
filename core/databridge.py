@@ -1,6 +1,7 @@
 from firebase import Firebase
 from stock import Stock
-from option import Option, OptionPositions
+from option import Option
+from positions import OptionPositions
 
 class DataBridge(Firebase):
     def __init__(self):
