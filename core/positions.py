@@ -90,7 +90,7 @@ class Positions(Robinhood):
                 'id': instrument['id'],
                 'mark': reader.get_price(),
                 'type': 'security'
-                })
+            })
         return results
 
     def get_option_positions(self, results = []):
@@ -107,16 +107,3 @@ class Positions(Robinhood):
                 'type': 'option'
             })
         return results
-
-
-
-ps = Positions()
-results = ps.get_option_positions()
-
-#results = o.get_security_positions()
-#print(results[2])
-p = Position(results[2])
-print(p.data)
-
-#s = StockReader(symbols = ['amd'], output_format='json')
-#print(s.get_price())

@@ -161,9 +161,9 @@ class Robinhood:
         return [self.get_url(instrument)["symbol"] for instrument in instrument_list]
 
     def get_options(self, stock, expiration_dates, option_type):
-        instrumentid = self.get_url(self.quote_data(stock)["instrument"])["id"]
+        instrumentid = self.instruments(stock)[0]['id']
         if(type(expiration_dates) == list):
-            _expiration_dates_string = expiration_dates.join(",")
+            _expiration_dates_string = ','.join(expiration_dates)
         else:
             _expiration_dates_string = expiration_dates
         chain_id = self.get_url(chain(instrumentid))["results"][0]["id"]
