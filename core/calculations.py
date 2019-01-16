@@ -26,4 +26,3 @@ for option in r.get_options('NFLX',['2019-01-18','2019-01-25'],'call'):
         volume = temp_vol
         highest_volume = option
 ###################################
->>>>>>> a3fc165c3005ed352acdea0102006b50a2d44c48
