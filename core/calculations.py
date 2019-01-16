@@ -1,12 +1,21 @@
 from stock import Stock
 from iex import StockReader
+<<<<<<< HEAD
 from robinhood import Robinhood
 from option import Option
+=======
+from option import Option
+from robinhood import Robinhood
+>>>>>>> a3fc165c3005ed352acdea0102006b50a2d44c48
 import pandas as pd
 
 
 #VWAP 1 Day = (Sum of number of shares bought * price) / number of shares bought
+<<<<<<< HEAD
 # s = StockReader(['NVDA'])
+=======
+# s = StockReader(['NFLX'])
+>>>>>>> a3fc165c3005ed352acdea0102006b50a2d44c48
 # chart = s.get_chart(range='1d')
 # vw = 0
 # volume = 0
@@ -16,6 +25,7 @@ import pandas as pd
 #     vw += avg * vol
 #     volume += vol
 # vwap = vw/volume
+<<<<<<< HEAD
 #######################
 
 #Get the option with the highest volume
@@ -29,3 +39,18 @@ for option in options:
         vol = o.volume
         highest_vol = o
 ##########
+=======
+# print(vwap)
+###########################
+
+#Find highest_volume for option chain
+r = Robinhood()
+volume = 0
+highest_volume = None
+for option in r.get_options('NFLX',['2019-01-18','2019-01-25'],'call'):
+    temp_vol = r.get_option_market_data(option['id'])['volume']
+    if temp_vol > volume:
+        volume = temp_vol
+        highest_volume = option
+###################################
+>>>>>>> a3fc165c3005ed352acdea0102006b50a2d44c48
