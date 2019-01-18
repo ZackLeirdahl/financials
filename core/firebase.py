@@ -14,8 +14,7 @@ class Firebase:
 
 	def remove_document(self, collection, key):
 		for doc in self.db.collection(collection).get():
-			if doc.id == key.upper():
-				doc.reference.delete()
+			if doc.id == key: doc.reference.delete()
 
 	def update_document(self, collection, key, data):
 		self.db.collection(collection).document(key).update(data)

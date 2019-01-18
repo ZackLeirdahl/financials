@@ -107,3 +107,9 @@ class Positions(Robinhood):
                 'type': 'option'
             })
         return results
+
+    def get_position_data(self, results = {}):
+        for arg in self.get_security_positions() + self.get_option_positions():
+            p = Position(arg)
+            results[p.id] = p.data
+        return results
