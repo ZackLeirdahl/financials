@@ -1,4 +1,5 @@
 from robinhood import Robinhood
+import calculations as calcs
 class Option(Robinhood):
     def __init__(self, args):
         Robinhood.__init__(self)
@@ -18,6 +19,7 @@ class Option(Robinhood):
         self._gamma = None
         self._theta = None
         self._data = None
+        self._theoretical_mark = None
 
     @property
     def type(self):
@@ -26,7 +28,7 @@ class Option(Robinhood):
 
     @property
     def strike(self):
-        self._strike = self.args['strike_price']
+        self._strike = round(float(self.args['strike_price']),2)
         return self._strike
 
     @property
@@ -51,7 +53,7 @@ class Option(Robinhood):
 
     @property
     def implied_volatility(self):
-        self._implied_volatility = self.details['implied_volatility']
+        self._implied_volatility = round(float(self.details['implied_volatility']),3)
         return self._implied_volatility
 
     @property
@@ -70,9 +72,14 @@ class Option(Robinhood):
         return self._theta
 
     @property
+    def theoretical_mark(self):
+        self._theoretical_mark = calcs.get_theoretical_mark(self.ticker_symbol, self.strike, self.implied_volatility, self.expiration, self.type)
+        return self._theoretical_mark
+
+    @property
     def data(self):
         self.details = self.get_option_market_data(self.id)
         self._data = {p: getattr(self, p) for p in self._properties}
         return self._data
 
-    _properties =  ['type','expiration','strike','mark','implied_volatility','open_interest','volume','delta','gamma','theta']
+    _properties =  ['type','expiration','strike','mark','implied_volatility','open_interest','volume','delta','gamma','theta','theoretical_mark']
