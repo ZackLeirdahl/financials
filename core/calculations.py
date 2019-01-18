@@ -38,6 +38,7 @@ def cumulative_normal_dist(derivative):
 
 def get_dates(num_weeks):
     #Add logic to give either month or num_weeks
+    #test
     return [str(date.fromordinal(date.today().toordinal() + ((1+i)*{0:4,1:3,2:2,3:1,4:7,5:6,6:5}[date.today().weekday()]))) for i in range(num_weeks)]
 
 #print(get_highest_volume('CGC',2,'call'))
