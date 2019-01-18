@@ -43,12 +43,12 @@ class Option(Robinhood):
 
     @property
     def open_interest(self):
-        self._open_interest = self.details['open_interest']
+        self._open_interest = int(self.details['open_interest'])
         return self._open_interest
 
     @property
     def volume(self):
-        self._volume = self.details['volume']
+        self._volume = int(self.details['volume'])
         return self._volume
 
     @property
@@ -58,17 +58,17 @@ class Option(Robinhood):
 
     @property
     def delta(self):
-        self._delta = self.details['delta']
+        self._delta = round(float(self.details['delta']),4)
         return self._delta
 
     @property
     def gamma(self):
-        self._gamma = self.details['gamma']
+        self._gamma = round(float(self.details['gamma'],4)
         return self._gamma
 
     @property
     def theta(self):
-        self._theta = self.details['theta']
+        self._theta = round(float(self.details['theta'],4)
         return self._theta
 
     @property
