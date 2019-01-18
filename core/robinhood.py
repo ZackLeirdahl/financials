@@ -8,6 +8,8 @@ from six.moves import input
 import getpass
 import requests
 import dateutil
+import operator
+from datetime import *
 
 class Robinhood:
     session = None
@@ -229,6 +231,14 @@ class Robinhood:
         for res in self.session.get(option_positions(),timeout=15).json()['results']:
             if float(res['quantity']) > 0: results.append(res)
         return results
+
+    def get_highest_volume_strike(self, stock, num_weeks, type = 'call'):
+        records = {option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(stock, get_dates(num_weeks), type)}
+        return sorted(records.items(), key=operator.itemgetter(1),reverse=True)[0]
+
+def get_dates(arg):
+    if type(arg) == int:
+        return [str(date.fromordinal(date.today().toordinal() + ((1+i)*{0:4,1:3,2:2,3:1,4:7,5:6,6:5}[date.today().weekday()]))) for i in range(arg)]
 
 def option_positions():
     return "https://api.robinhood.com/options/positions/"

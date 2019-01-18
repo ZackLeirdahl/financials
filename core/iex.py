@@ -366,6 +366,14 @@ class StockReader(_IEXBase):
     def get_technicals(self):
         return {'MA 20': self.get_moving_average(20), 'MA 50': self.get_moving_average(50), 'MA 100': self.get_moving_average(100), 'MA 200': self.get_moving_average(200), '52 High': self.get_years_high(), '52 Low': self.get_years_low()}
 
+    def get_vwap_daily(self, vw = 0, volume = 0):
+        for point in self.get_chart(range='1d'):
+            avg = float(point['marketAverage'])
+            vol = float(point['marketVolume'])
+            vw += avg * vol
+            volume += vol
+        return round(vw/volume,2)
+
 class HistoricalReader(_IEXBase):
     def __init__(self, symbols, start, end, output_format='json', **kwargs):
         if isinstance(symbols, list) and len(symbols) > 1:
