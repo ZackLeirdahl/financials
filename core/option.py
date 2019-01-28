@@ -63,12 +63,12 @@ class Option(Robinhood):
 
     @property
     def gamma(self):
-        self._gamma = round(float(self.details['gamma'],4)
+        self._gamma = round(float(self.details['gamma']),4)
         return self._gamma
 
     @property
     def theta(self):
-        self._theta = round(float(self.details['theta'],4)
+        self._theta = round(float(self.details['theta']),4)
         return self._theta
 
     @property
