@@ -1,4 +1,4 @@
-import numpy as np
+
 from datetime import *
 from math import *
 from iex import StockReader
@@ -16,3 +16,17 @@ def cumulative_normal_dist(derivative):
     dist = 1-1/sqrt(2*pi)*exp(-abs(derivative)*abs(derivative)/2.)*(0.31938153*(1.0/(1.0+0.2316419* abs(derivative)))+-0.356563782*(1.0/(1.0+0.2316419* abs(derivative)))*(1.0/(1.0+0.2316419* abs(derivative)))+1.781477937*pow((1.0/(1.0+0.2316419* abs(derivative))),3)+-1.821255978*pow((1.0/(1.0+0.2316419* abs(derivative))),4)+1.330274429*pow((1.0/(1.0+0.2316419* abs(derivative))),5))
     if derivative < 0: return 1-dist
     return dist
+stocks = ['BAC','AMD','MSFT','FB','PYPL','SONO','GOOS']
+
+def get_summary_calcs(stock):
+    if type(stock) == str:
+        stocks = [str]
+    else:
+        stocks = stock
+    summary = {}
+    for stock in stocks:
+        reader = StockReader([stock])
+        summary['vwap'] = str(sr.get_vwap_daily())
+    return summary
+
+print(get_summary_calcs('AMD'))
