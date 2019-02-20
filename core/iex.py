@@ -374,6 +374,20 @@ class StockReader(_IEXBase):
             volume += vol
         return round(vw/volume,2)
 
+    def get_average_volume(self, volume = 0):
+        chart = self.get_chart()
+        records = chart[len(chart)-10:]
+        for record in records:
+            volume +=record['volume']
+        return volume/10
+
+    def get_overview(self):
+        ohlc = self.get_ohlc()
+        data = {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'VWAP': self.get_vwap_daily(),
+            'MA(10)': self.get_moving_average(10),'MA(50)': self.get_moving_average(50), 'MA(200)': self.get_moving_average(200),
+            'High': ohlc['high'], 'Low': ohlc['low'], 'Open':ohlc['open']['price'], 'Close': ohlc['close']['price'], 'Price': self.get_price()  }
+        return data
+
 class HistoricalReader(_IEXBase):
     def __init__(self, symbols, start, end, output_format='json', **kwargs):
         if isinstance(symbols, list) and len(symbols) > 1:
