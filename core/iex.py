@@ -383,10 +383,8 @@ class StockReader(_IEXBase):
 
     def get_overview(self):
         ohlc = self.get_ohlc()
-        data = {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'VWAP': self.get_vwap_daily(),
-            'MA(10)': self.get_moving_average(10),'MA(50)': self.get_moving_average(50), 'MA(200)': self.get_moving_average(200),
-            'High': ohlc['high'], 'Low': ohlc['low'], 'Open':ohlc['open']['price'], 'Close': ohlc['close']['price'], 'Price': self.get_price()  }
-        return data
+        return {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'VWAP': self.get_vwap_daily(), 'MA(10)': self.get_moving_average(10),'MA(50)': self.get_moving_average(50), 'MA(200)': self.get_moving_average(200), 'High': ohlc['high'], 'Low': ohlc['low'], 'Open':ohlc['open']['price'], 'Close': ohlc['close']['price'], 'Price': self.get_price()  }
+
 
 class HistoricalReader(_IEXBase):
     def __init__(self, symbols, start, end, output_format='json', **kwargs):

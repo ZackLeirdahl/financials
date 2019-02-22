@@ -1,6 +1,8 @@
+from option import Option
 from robinhood import Robinhood
-from iex import StockReader
-stocks = ['BAC','AMD','MSFT','FB','PYPL','SONO','GOOS']
-for s in stocks:
-    sr = StockReader([s])
-    print(s + '\n' + str(sr.get_vwap_daily()))
+
+r = Robinhood()
+pos = r.get_options_positions()
+for i in range(len(pos)):
+    o = Option(pos[i]['option'])
+    print(o.data)
