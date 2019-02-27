@@ -1,5 +1,5 @@
 from robinhood import Robinhood
-import calculations as calcs
+from calculations import *
 class Option(Robinhood):
     def __init__(self, args):
         Robinhood.__init__(self)

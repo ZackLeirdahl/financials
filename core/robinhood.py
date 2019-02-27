@@ -229,9 +229,11 @@ class Robinhood:
         return self.session.get(positions() + '?nonzero=true', timeout=15).json()['results']
 
     def get_options_positions(self, results = []):
-        for res in self.session.get(option_positions(),timeout=15).json()['results']:
-            if float(res['quantity']) > 0: results.append(res)
-        return results
+        data = self.session.get(option_positions(),timeout=15).json()['results'].todict()
+        #dict(filter(lambda x: float(x['quantity']) > 0),data.items())
+        #for res in self.session.get(option_positions(),timeout=15).json()['results']:
+        #    if float(res['quantity']) > 0: results.append(res)
+        return dict(filter(lambda x: float(x['quantity']) > 0,data.items()))
 
     def get_highest_volume_strike(self, stock, num_weeks, type = 'call'):
         records = {option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(stock, get_dates(num_weeks), type)}
@@ -333,3 +335,6 @@ def market_data(optionid):
 
 def convert_token():
     return "https://api.robinhood.com/oauth2/migrate_token/"
+
+r = Robinhood()
+print(r.get_highest_volume_strike('bac',2,'call'))

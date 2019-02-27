@@ -14,7 +14,6 @@ class Stock(StockReader):
         self._short_interest = None
         self._market_cap = None
         self._shares_outstanding = None
-        self._technicals = None
         self._data = None
 
     @property
@@ -39,7 +38,7 @@ class Stock(StockReader):
 
     @property
     def beta(self):
-    	self._beta = round(self.get_beta(), 2)
+    	self._beta = round(self.get_key_stats()['beta'], 2)
     	return self._beta
 
     @property
@@ -68,14 +67,9 @@ class Stock(StockReader):
     	return self._market_cap
 
     @property
-    def technicals(self):
-        self._technicals = self.get_technicals()
-        return self._technicals
-
-    @property
     def data(self):
         #schema = stocks/ticker_symbol/data
         self._data = {p: getattr(self, p) for p in self._properties}
         return self._data
 
-    _properties =  ['name','sector','industry','exchange','beta','short_date','short_interest','shares_outstanding','market_cap','historical_volatility', 'technicals']
+    _properties =  ['name','sector','industry','exchange','beta','short_date','short_interest','shares_outstanding','market_cap','historical_volatility']
