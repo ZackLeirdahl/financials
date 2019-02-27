@@ -162,7 +162,8 @@ class Robinhood:
         instrument_list = self.get_url(tags(tag))["instruments"]
         return [self.get_url(instrument)["symbol"] for instrument in instrument_list]
 
-    def get_options(self, stock, expiration_dates, option_type):
+    def get_options(self, stock, num_weeks, option_type):
+        expiration_dates = get_dates(num_weeks)
         instrumentid = self.instruments(stock)[0]['id']
         if(type(expiration_dates) == list):
             _expiration_dates_string = ','.join(expiration_dates)
@@ -234,7 +235,10 @@ class Robinhood:
 
     def get_highest_volume_strike(self, stock, num_weeks, type = 'call'):
         records = {option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(stock, get_dates(num_weeks), type)}
-        return sorted(records.items(), key=operator.itemgetter(1),reverse=True)[0]
+        data = sorted(records.items(), key=operator.itemgetter(1),reverse=True)[0]
+        mkt_data = self.get_option_market_data(data[0])
+        inst = self.get_url(mkt_data['instrument'])
+        return {'Expiration': inst['expiration_date'], 'Strike': inst['strike_price'], 'Mark': mkt_data['mark_price'], 'Volume': mkt_data['volume'], 'Open Interest': mkt_data['open_interest']}
 
 def get_dates(arg):
     if type(arg) == int:

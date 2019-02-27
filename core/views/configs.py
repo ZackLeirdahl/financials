@@ -6,5 +6,8 @@ def get_params(view):
             'Fields': ['Symbol','Price','Volume','Average Volume','VWAP','MA(10)','MA(50)','MA(200)','Open','High','Low','Close']},
         'OptionView': {
             'Title': 'Option View',
-            'Fields': ['ID','Symbol','Type', 'Expiration', 'Strike', 'Implied Volatility', 'Interest Rate', 'Mark', 'Theoretical Mark']}}
+            'Fields': ['ID','Symbol','Type', 'Expiration', 'Strike', 'Implied Volatility', 'Interest Rate', 'Mark', 'Theoretical Mark']},
+        'UnuasualOptionView': {
+            'Title': 'Unuasual Option View',
+            'Fields': ['Symbol', 'Number of Weeks','Type', 'Expiration', 'Strike', 'Mark', 'Volume', 'Open Interest']}}
     return params[view]
