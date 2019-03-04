@@ -3,9 +3,6 @@ from six.moves.urllib.request import getproxies
 from utils import *
 
 class StockReader(object):
-
-    _endpoints = ["chart", "quote", "book", "open-close", "previous","company", "stats", "peers", "relevant", "news","financials", "earnings", "dividends", "splits", "logo", "price", "delayed-quote", "effective-spread", "volume-by-venue", "ohlc"]
-
     def __init__(self, symbol=None, login = True, output_format='json', **kwargs):
         self.symbol = symbol.upper()
         self.output_format = output_format
@@ -18,7 +15,7 @@ class StockReader(object):
         if login: self.login()
 
     def login(self):
-        res = self.robinhood_session.post("https://api.robinhood.com/oauth2/token/", data={'password': 'Aksahc123!','username': 'zackleirdahl@gmail.com','grant_type': 'password','client_id': 'c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS'}, timeout=15)
+        res = self.robinhood_session.post(token(), data={'password': 'Aksahc123!','username': 'zackleirdahl@gmail.com','grant_type': 'password','client_id': 'c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS'}, timeout=15)
         res.raise_for_status()
         data = res.json()
         self.auth_token = data['access_token']
@@ -113,8 +110,8 @@ class StockReader(object):
     def get_volume(self):
         return self.get_quote(filter_="latestVolume")
 
-    def instruments(self, stock):
-        res = self.robinhood_session.get(instruments(), params={'query': stock.upper()}, timeout=15)
+    def instruments(self):
+        res = self.robinhood_session.get(instruments(), params={'query': self.symbol}, timeout=15)
         res.raise_for_status()
         return res.json()['results']
 
@@ -124,7 +121,7 @@ class StockReader(object):
         return req.json()
 
     def get_historical_quotes(self, interval, span):
-        res = self.robinhood_session.get("https://api.robinhood.com/quotes/historicals/", params={'symbols': self.symbol,'interval': interval,'span': span, 'bounds': 'regular'}, timeout=15)
+        res = self.robinhood_session.get(historicals(), params={'symbols': self.symbol,'interval': interval,'span': span, 'bounds': 'regular'}, timeout=15)
         return res.json()
 
     def get_news_robinhood(self):
@@ -137,16 +134,16 @@ class StockReader(object):
         return [self.get_url(instrument)["symbol"] for instrument in self.get_url(tags(tag))["instruments"]]
 
     def get_options(self, weeks, option_type):
-        return [contract for contract in self.get_url(options(self.get_url(chain(self.instruments(self.symbol)[0]['id']))["results"][0]["id"],  get_dates(weeks), option_type))["results"]]
+        return [contract for contract in self.get_url(options(self.get_url(chain(self.instruments()[0]['id']))["results"][0]["id"], get_dates(weeks), option_type))["results"]]
 
     def get_option_market_data(self, optionid):
         return self.get_url(market_data(optionid))
 
     def positions(self):
-        return self.robinhood_session.get("https://api.robinhood.com/positions/", timeout=15).json()
+        return self.robinhood_session.get(positions(), timeout=15).json()
 
     def securities_owned(self):
-        return self.robinhood_session.get("https://api.robinhood.com/positions/" + '?nonzero=true', timeout=15).json()['results']
+        return self.robinhood_session.get(positions() + '?nonzero=true', timeout=15).json()['results']
 
     def get_options_positions(self):
-        return list(filter(lambda k: float(k['quantity']) > 0, self.robinhood_session.get("https://api.robinhood.com/options/positions/",timeout=15).json()['results']))
+        return list(filter(lambda k: float(k['quantity']) > 0, self.robinhood_session.get(option_positions(),timeout=15).json()['results']))

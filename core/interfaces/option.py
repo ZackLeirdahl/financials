@@ -1,10 +1,11 @@
-from robinhood import Robinhood
-from calculations import *
-class Option(Robinhood):
+from api import StockReader
+from utils import *
+
+class Option(StockReader):
     def __init__(self, args):
-        Robinhood.__init__(self)
-        if type(args) == dict: self.args = args
-        else: self.args = self.get_url(args)
+        StockReader.__init__(self,symbol = '')
+        self.args = self.build_args(args)
+        self.symbol = self.args['chain_symbol']
         self.ticker_symbol = self.args['chain_symbol']
         self.id = self.args['id']
         self.details = None
@@ -20,6 +21,19 @@ class Option(Robinhood):
         self._theta = None
         self._data = None
         self._theoretical_mark = None
+
+    def build_args(self, args):
+        if type(args) == str:
+            market_data = self.get_option_market_data(args)
+            inst_data = self.get_url(market_data['instrument'])
+        elif 'instrument' in args.keys():
+            market_data = args
+            inst_data =  self.get_url(market_data['instrument'])
+        else:
+            market_data = self.get_option_market_data(args['id'])
+            inst_data = args
+        market_data.update(inst_data)
+        return {k: market_data[k] for k in ['volume','open_interest','implied_volatility','mark_price','delta','gamma','theta','chain_symbol','id','expiration_date','strike_price','type']}
 
     @property
     def type(self):
@@ -38,42 +52,42 @@ class Option(Robinhood):
 
     @property
     def mark(self):
-        self._mark = self.details['mark_price']
+        self._mark = self.args['mark_price']
         return self._mark
 
     @property
     def open_interest(self):
-        self._open_interest = int(self.details['open_interest'])
+        self._open_interest = int(self.args['open_interest'])
         return self._open_interest
 
     @property
     def volume(self):
-        self._volume = int(self.details['volume'])
+        self._volume = int(self.args['volume'])
         return self._volume
 
     @property
     def implied_volatility(self):
-        self._implied_volatility = round(float(self.details['implied_volatility']),3)
+        self._implied_volatility = round(float(self.args['implied_volatility']),3)
         return self._implied_volatility
 
     @property
     def delta(self):
-        self._delta = round(float(self.details['delta']),4)
+        self._delta = round(float(self.args['delta']),4)
         return self._delta
 
     @property
     def gamma(self):
-        self._gamma = round(float(self.details['gamma']),4)
+        self._gamma = round(float(self.args['gamma']),4)
         return self._gamma
 
     @property
     def theta(self):
-        self._theta = round(float(self.details['theta']),4)
+        self._theta = round(float(self.args['theta']),4)
         return self._theta
 
     @property
     def theoretical_mark(self):
-        self._theoretical_mark = calcs.get_theoretical_mark(self.ticker_symbol, self.strike, self.implied_volatility, self.expiration, self.type)
+        self._theoretical_mark = get_theoretical_mark(self.ticker_symbol, self.strike, self.implied_volatility, self.expiration, self.get_price(), self.type)
         return self._theoretical_mark
 
     @property

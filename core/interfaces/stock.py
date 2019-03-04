@@ -1,9 +1,9 @@
-from iex import StockReader
+from methods import StockMethods
 
-class Stock(StockReader):
-    def __init__(self, ticker_symbol):
-        StockReader.__init__(self, symbols = [ticker_symbol], output_format='json')
-        self.ticker_symbol = ticker_symbol.upper()
+class Stock(StockMethods):
+    def __init__(self, symbol):
+        StockMethods.__init__(self, symbol)
+        self.ticker_symbol = symbol.upper()
         self._name = None
         self._sector = None
         self._industry = None
@@ -68,7 +68,6 @@ class Stock(StockReader):
 
     @property
     def data(self):
-        #schema = stocks/ticker_symbol/data
         self._data = {p: getattr(self, p) for p in self._properties}
         return self._data
 

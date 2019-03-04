@@ -1,9 +1,9 @@
 from tkinter import *
-import configs as c
-import os,sys,inspect
+from configs import *
+import os, sys, inspect
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))))
-from iex import StockReader
-from robinhood import Robinhood
+from utils import *
+from api import StockReader
 
 class View:
     def __init__(self, title, fields):
