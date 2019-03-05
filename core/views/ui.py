@@ -1,16 +1,18 @@
 from tkinter import *
 from configs import *
 import os, sys, inspect
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))) + '\\interfaces')
 from utils import *
-from api import StockReader
+from methods import StockMethods
 
-class View:
+class View(StockMethods):
     def __init__(self, title, fields):
+        StockMethods.__init__(self, '')
         self.root = Tk()
         self.root.title(title)
         self.entries = {}
         self.fields = fields
+        self.execute = Button(self.root,text='Execute',command=self.update)
 
     def build_entries(self):
         for field in self.fields:
@@ -23,50 +25,36 @@ class View:
             self.entries[field] = entry
 
     def start(self):
-        raise NotImplementedError('This is overridden in child class.')
+        self.build_entries()
+        self.execute.pack(side=LEFT, padx=5, pady=5)
+        self.root.mainloop()
 
     def refresh(self, data):
+        for k,v in data.items():
+            self.entries[k].delete(0,END)
+            self.entries[k].insert(0,v)
+
+    def update(self):
+        raise NotImplementedError('This is definied in child class.')
 
 class StockView(View):
     def __init__(self, title, fields):
         View.__init__(self, title, fields)
-        self.execute = Button(self.root,text='Execute',command=self.update)
-
-    def start(self):
-        self.build_entries()
-        self.execute.pack(side=LEFT, padx=5, pady=5)
-        self.root.mainloop()
 
     def update(self):
-        s = StockReader([self.entries['Symbol'].get()])
-        data = s.get_overview()
-        for k,v in data.items():
-            self.entries[k].insert(0,v)
-
-#This view can import options and run theoretical scenarios
-class OptionView(View):
-    def __init__(self, title, fields):
-        View.__init__(self, title, fields)
+        self.symbol = self.entries['Symbol'].get().upper()
+        self.refresh(self.get_overview())
 
 class UnuasualOptionView(View):
     def __init__(self, title, fields):
         View.__init__(self, title, fields)
-        self.execute = Button(self.root,text='Execute',command=self.update)
-
-    def start(self):
-        self.build_entries()
-        self.execute.pack(side=LEFT, padx=5, pady=5)
-        self.root.mainloop()
 
     def update(self):
-        r = Robinhood()
-        data = r.get_highest_volume_strike(self.entries['Symbol'].get(),int(self.entries['Number of Weeks'].get()),self.entries['Type'].get().lower())
-        for k,v in data.items():
-            self.entries[k].insert(0,v)
+        self.symbol = self.entries['Symbol'].get().upper()
+        self.refresh(self.get_highest_volume_strike(int(self.entries['Number of Weeks'].get()),self.entries['Type'].get().lower()))
 
 
 if __name__ == '__main__':
-    params = c.get_params('UnuasualOptionView')
-    #app = StockView(params['Title'],params['Fields'])
-    app = UnuasualOptionView(params['Title'],params['Fields'])
+    params = get_params('StockView')
+    app = StockView(params['Title'],params['Fields'])
     app.start()
