@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from api import StockReader
 from utils import *
+from math import *
 
 class StockMethods(StockReader):
     def __init__(self, symbol=None, login = True, output_format='json', **kwargs):
@@ -23,9 +24,18 @@ class StockMethods(StockReader):
     def get_average_volume(self):
         return sum([record['volume'] for record in self.get_chart()[-10:]])/10
 
-    def get_overview(self):
-        ohlc = self.get_ohlc()
-        return {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'VWAP': self.get_vwap_daily(), 'MA(10)': self.get_moving_average(10),'MA(20)': self.get_moving_average(20), 'MA(50)': self.get_moving_average(50), 'High': ohlc['high'], 'Low': ohlc['low'], 'Open':ohlc['open']['price'], 'Close': ohlc['close']['price'], 'Price': self.get_price()  }
+    def get_overview(self, format_price = True):
+        data = {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'Price': self.get_price()}
+        if format_price: data.update(self.get_price_overview())
+        else: data.update(self.get_price_overview_percentages())
+        return data
+
+    def get_price_overview(self):
+        return {'VWAP': self.get_vwap_daily(), 'MA(10)': self.get_moving_average(10),'MA(20)': self.get_moving_average(20), 'MA(50)': self.get_moving_average(50), 'High': self.get_ohlc()['high'], 'Low': self.get_ohlc()['low']}
+
+    def get_price_overview_percentages(self):
+        price = self.get_price()
+        return {k: round(100 * (price/v),2) for k,v in self.get_price_overview().items()}
 
     def get_highest_volume_strike(self, weeks, type = 'call'):
         mkt_data = self.get_option_market_data(sorted({option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(weeks, type)}.items(),key=operator.itemgetter(1),reverse=True)[0][0])

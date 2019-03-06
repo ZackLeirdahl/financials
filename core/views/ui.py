@@ -5,14 +5,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfi
 from utils import *
 from methods import StockMethods
 
-class View(StockMethods):
+class BaseView(StockMethods):
     def __init__(self, title, fields):
-        StockMethods.__init__(self, '')
+        StockMethods.__init__(self,'')
         self.root = Tk()
         self.root.title(title)
         self.entries = {}
         self.fields = fields
-        self.execute = Button(self.root,text='Execute',command=self.update)
+        self.build_entries()
 
     def build_entries(self):
         for field in self.fields:
@@ -24,30 +24,41 @@ class View(StockMethods):
             entry.pack(side=RIGHT, expand=YES, fill=X)
             self.entries[field] = entry
 
-    def start(self):
-        self.build_entries()
-        self.execute.pack(side=LEFT, padx=5, pady=5)
-        self.root.mainloop()
-
     def refresh(self, data):
         for k,v in data.items():
             self.entries[k].delete(0,END)
             self.entries[k].insert(0,v)
 
+    def start(self):
+        raise NotImplementedError('This is definied in child class.')
+
     def update(self):
         raise NotImplementedError('This is definied in child class.')
 
-class StockView(View):
+class StockView(BaseView):
     def __init__(self, title, fields):
-        View.__init__(self, title, fields)
+        BaseView.__init__(self, title, fields)
+        self.execute_text = StringVar(self.root,value='Execute')
+        self.execute = Button(self.root, textvariable=self.execute_text,command=self.update)
+        self.format_price = False
+
+    def start(self):
+        self.execute.pack(side=LEFT,padx=5,pady=5)
+        self.root.mainloop()
 
     def update(self):
         self.symbol = self.entries['Symbol'].get().upper()
-        self.refresh(self.get_overview())
+        if self.execute_text.get() == 'Execute':
+            self.execute_text.set('Format Percent')
+            self.format_price = True
+        else:
+            self.execute_text.set('Execute')
+            self.format_price = False
+        self.refresh(self.get_overview(self.format_price))
 
-class UnuasualOptionView(View):
+class UnuasualOptionView(BaseView):
     def __init__(self, title, fields):
-        View.__init__(self, title, fields)
+        BaseView.__init__(self, title, fields)
 
     def update(self):
         self.symbol = self.entries['Symbol'].get().upper()
@@ -55,6 +66,6 @@ class UnuasualOptionView(View):
 
 
 if __name__ == '__main__':
-    params = get_params('StockView')
-    app = StockView(params['Title'],params['Fields'])
+    params = get_params('Stock View')
+    app = StockView(params['title'],params['fields'])
     app.start()
