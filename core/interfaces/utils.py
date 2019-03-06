@@ -41,6 +41,11 @@ def field_output_format(override=None, field_name=None):
         return _format_wrapper
     return _output_format
 
+def ema(series, n, fillna=False):
+	if fillna:
+		return series.ewm(span=n, min_periods=0).mean()
+	return series.ewm(span=n, min_periods=n).mean()
+
 def get_dates(weeks):
     return ','.join([str(date.fromordinal(date.today().toordinal() + ((1+i)*{0:4,1:3,2:2,3:1,4:7,5:6,6:5}[date.today().weekday()]))) for i in range(weeks)])
 

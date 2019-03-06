@@ -52,3 +52,24 @@ class StockMethods(StockReader):
         call = self.get_open_interest(weeks, 'call')
         put = self.get_open_interest(weeks, 'put')
         return call/(call + put)
+
+    def get_rsi(self, n=14, fillna=False):
+        diff = pd.DataFrame(self.get_chart())['close'].diff()
+        which_dn = diff < 0
+        up, dn = diff, diff*0
+        up[which_dn], dn[which_dn] = 0, -up[which_dn]
+        emaup = ema(up, n, fillna)
+        emadn = ema(dn, n, fillna)
+        rsi = 100 * emaup / (emaup + emadn)
+        if fillna:
+            rsi = rsi.replace([np.inf, -np.inf], np.nan).fillna(50)
+        return rsi
+
+    def get_macd(self, n_fast=12, n_slow=26, fillna=False):
+        close = pd.DataFrame(self.get_chart(range='1y'))['close']
+        emafast = ema(close, n_fast, fillna)
+        emaslow = ema(close, n_slow, fillna)
+        macd = emafast - emaslow
+        if fillna:
+            macd = macd.replace([np.inf, -np.inf], np.nan).fillna(0)
+        return macd
