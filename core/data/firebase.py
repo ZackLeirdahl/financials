@@ -20,4 +20,4 @@ class Firebase:
 		self.db.collection(collection).document(key).update(data)
 
 	def get_documents(self, collection):
-		return [doc.id for doc in self.db.collection(collection).get()]
+		return {doc.id: doc.to_dict() for doc in self.db.collection(collection).get()}

@@ -3,9 +3,10 @@ from six.moves.urllib.request import getproxies
 from utils import *
 
 class StockReader(object):
-    def __init__(self, symbol=None, login = True, output_format='json', **kwargs):
+    def __init__(self, symbol=None, login = True, output_format='json', retry_count = 5, **kwargs):
         self.symbol = symbol.upper()
         self.output_format = output_format
+        self.retry_count = retry_count
         self.endpoints = []
         self.iex_session = requests.session()
         self.robinhood_session = requests.session()
@@ -17,22 +18,13 @@ class StockReader(object):
     def login(self):
         res = self.robinhood_session.post(token(), data={'password': 'Aksahc123!','username': 'zackleirdahl@gmail.com','grant_type': 'password','client_id': 'c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS'}, timeout=15)
         res.raise_for_status()
-        data = res.json()
-        self.auth_token = data['access_token']
-        self.oauth_token = data['access_token']
-        self.headers['Authorization'] = 'Bearer ' + self.auth_token
-
-    def _validate_response(self, response):
-        if response.text == "Unknown symbol": raise ValueError("An error occurred while making the query.")
-        json_response = response.json(parse_int=None, parse_float=None)
-        if "Error Message" in json_response: raise ValueError("An error occurred while making the query.")
-        return json_response
+        self.headers['Authorization'] = 'Bearer ' + res.json()['access_token']
 
     def _execute_iex_query(self):
-        for i in range(4):
+        for i in range(self.retry_count + 1):
             response = self.iex_session.get(url="https://api.iextrading.com/1.0/stock/market/batch", params=self.params)
             if response.status_code == requests.codes.ok:
-                return self._validate_response(response)
+                return response.json(parse_int=None, parse_float=None)
         raise ValueError("An error occurred while making the query.")
 
     @property
@@ -83,6 +75,7 @@ class StockReader(object):
 
     @output_format(override='json')
     def get_news(self, **kwargs):
+        #['related', 'source', 'summary', 'image', 'datetime', 'headline', 'url']
         data = self._get_endpoint("news", kwargs)
         return {symbol: data[symbol]["news"] for symbol in list(data)}
 
@@ -124,9 +117,6 @@ class StockReader(object):
         res = self.robinhood_session.get(historicals(), params={'symbols': self.symbol,'interval': interval,'span': span, 'bounds': 'regular'}, timeout=15)
         return res.json()
 
-    def get_news_robinhood(self):
-        return self.robinhood_session.get(news(self.symbol), timeout=15).json()
-
     def get_url(self, url):
         return self.robinhood_session.get(url, timeout=15).json()
 
@@ -138,12 +128,6 @@ class StockReader(object):
 
     def get_option_market_data(self, optionid):
         return self.get_url(market_data(optionid))
-
-    def positions(self):
-        return self.robinhood_session.get(positions(), timeout=15).json()
-
-    def securities_owned(self):
-        return self.robinhood_session.get(positions() + '?nonzero=true', timeout=15).json()['results']
 
     def get_options_positions(self):
         return list(filter(lambda k: float(k['quantity']) > 0, self.robinhood_session.get(option_positions(),timeout=15).json()['results']))

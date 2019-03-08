@@ -1,11 +1,63 @@
 from datetime import *
 import pandas as pd
 from functools import wraps
-import dateutil
+import dateutil, requests, inspect
 import numpy as np
 from math import *
 
-_endpoints = ["chart", "quote", "book", "open-close", "previous","company", "stats", "peers", "relevant", "news","financials", "earnings", "dividends", "splits", "logo", "price", "delayed-quote", "effective-spread", "volume-by-venue", "ohlc"]
+def _retry(func):
+    @wraps(func)
+    def _retry_wrapper(self, *args, **kwargs):
+        for retry in range(self.retry_count):
+            try: return func(self, *args, **kwargs)
+            except: continue
+        raise ValueError('Retry account exceeded.')
+    return _retry_wrapper
+
+def call_api_on_func(func):
+    argspec = inspect.getargspec(func)
+    try:
+        positional_count = len(argspec.args) - len(argspec.defaults)
+        defaults = dict(zip(argspec.args[positional_count:], argspec.defaults))
+    except TypeError:
+        if argspec.args:
+            positional_count = len(argspec.args)
+            defaults = {}
+        elif argspec.defaults:
+            positional_count = 0
+            defaults = argspec.defaults
+    @wraps(func)
+    def _call_wrapper(self, *args, **kwargs):
+        used_kwargs = kwargs.copy()
+        used_kwargs.update(zip(argspec.args[positional_count:],args[positional_count:]))
+        used_kwargs.update({k: used_kwargs.get(k, d) for k, d in defaults.items()})
+        function_name, data_key, meta_data_key = func(self, *args, **kwargs)
+        url = '{}&{}={}'.format("{}function={}".format("http://www.alphavantage.co/query?",function_name), 'symbol', self.symbol)
+        for idx, arg_name in enumerate(argspec.args[1:]):
+            try: arg_value = args[idx]
+            except: arg_value = used_kwargs[arg_name]
+            if 'matype' in arg_name and arg_value:
+                arg_value = ['SMA','EMA','WMA','DEMA','TEMA','TRIMA','T3','KAMA','MAMA'].index(arg_value)
+            if arg_value:
+                if isinstance(arg_value, tuple) or isinstance(arg_value, list): arg_value = ','.join(arg_value)
+                url = '{}&{}={}'.format(url, arg_name, arg_value)
+        return _handle_api_call('{}&apikey={}&datatype={}'.format(url, self.alpha_key, 'json')), data_key, meta_data_key
+    return _call_wrapper
+
+def output_format_av(func, override=None):
+    @wraps(func)
+    def _format_wrapper(self, *args, **kwargs):
+        call_response, data_key, meta_data_key = func(self, *args, **kwargs)
+        data = call_response[data_key]
+        if self.output_format.lower() == 'json':
+            return data, call_response[meta_data_key]
+        else:
+            return pd.DataFrame.from_dict(data, orient='index', dtype=float), call_response[meta_data_key]
+    return _format_wrapper
+
+@_retry
+def _handle_api_call(url):
+    return requests.get(url, proxies={}).json()
 
 def output_format(override=None):
     def _output_format(func):

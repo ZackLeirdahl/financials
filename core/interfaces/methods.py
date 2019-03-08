@@ -25,17 +25,23 @@ class StockMethods(StockReader):
         return sum([record['volume'] for record in self.get_chart()[-10:]])/10
 
     def get_overview(self, format_price = True):
-        data = {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'Price': self.get_price()}
-        if format_price: data.update(self.get_price_overview())
-        else: data.update(self.get_price_overview_percentages())
+        data = self.get_misc_overview()
+        data.update(self.get_technical_overview())
+        data.update(self.get_price_overview(format_price))
         return data
 
-    def get_price_overview(self):
-        return {'VWAP': self.get_vwap_daily(), 'MA(10)': self.get_moving_average(10),'MA(20)': self.get_moving_average(20), 'MA(50)': self.get_moving_average(50), 'High': self.get_ohlc()['high'], 'Low': self.get_ohlc()['low']}
+    def get_misc_overview(self):
+        return {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'Price': self.get_price()}
 
-    def get_price_overview_percentages(self):
-        price = self.get_price()
-        return {k: round(100 * (price/v),2) for k,v in self.get_price_overview().items()}
+    def get_price_overview(self, format_price = True):
+        data = {'VWAP': self.get_vwap_daily(), 'MA(10)': float(round(self.get_moving_average(10),2)),'MA(20)': float(round(self.get_moving_average(20),2)), 'MA(50)': float(round(self.get_moving_average(50),2)), 'High': self.get_ohlc()['high'], 'Low': self.get_ohlc()['low']}
+        if not format_price:
+            price = self.get_price()
+            return {k: round(100 * (price/v),2) for k,v in data.items()}
+        return data
+
+    def get_technical_overview(self):
+        return {'RSI': float(round(list(self.get_rsi())[-1],2)), 'MACD': float(round(list(self.get_macd())[-1],2)), 'WR': float(round(list(self.get_wr())[-1],2))}
 
     def get_highest_volume_strike(self, weeks, type = 'call'):
         mkt_data = self.get_option_market_data(sorted({option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(weeks, type)}.items(),key=operator.itemgetter(1),reverse=True)[0][0])
@@ -49,8 +55,8 @@ class StockMethods(StockReader):
         return sum([int(self.get_option_market_data(option['id'])['volume']) for option in self.get_options(weeks,type)])
 
     def get_call_put_spread(self, weeks = 2):
-        call = self.get_open_interest(weeks, 'call')
-        put = self.get_open_interest(weeks, 'put')
+        call = self.get_option_volume(weeks, 'call')
+        put = self.get_option_volume(weeks, 'put')
         return call/(call + put)
 
     def get_rsi(self, n=14, fillna=False):
@@ -73,3 +79,15 @@ class StockMethods(StockReader):
         if fillna:
             macd = macd.replace([np.inf, -np.inf], np.nan).fillna(0)
         return macd
+
+    def get_wr(self, lbp=14, fillna=False):
+        data = pd.DataFrame(self.get_chart())
+        max_high = data['high'].rolling(window=lbp).max()
+        min_low = data['low'].rolling(window=lbp).min()
+        wr = -100 * ((max_high - data['close'])/(max_high - min_low))
+        if fillna:
+            wr = wr.replace([np.inf, -np.inf], np.nan).fillna(-50)
+        return wr
+
+m = StockMethods('SPLK')
+print(m.get_rsi())
