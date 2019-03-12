@@ -1,13 +1,13 @@
 import operator
 import pandas as pd
 import numpy as np
-from api import StockReader
+from client import Client
 from utils import *
 from math import *
 
-class StockMethods(StockReader):
-    def __init__(self, symbol=None, login = True, output_format='json', **kwargs):
-        StockReader.__init__(self, symbol, login, output_format, **kwargs)
+class ClientMethods(Client):
+    def __init__(self, symbol=None, **kwargs):
+        Client.__init__(self, symbol, **kwargs)
 
     def get_historical_volatility(self):
         data = pd.DataFrame(self.get_chart(range='1y'))
@@ -26,7 +26,6 @@ class StockMethods(StockReader):
 
     def get_overview(self, format_price = True):
         data = self.get_misc_overview()
-        data.update(self.get_technical_overview())
         data.update(self.get_price_overview(format_price))
         return data
 
@@ -39,9 +38,6 @@ class StockMethods(StockReader):
             price = self.get_price()
             return {k: round(100 * (price/v),2) for k,v in data.items()}
         return data
-
-    def get_technical_overview(self):
-        return {'RSI': float(round(list(self.get_rsi())[-1],2)), 'MACD': float(round(list(self.get_macd())[-1],2)), 'WR': float(round(list(self.get_wr())[-1],2))}
 
     def get_highest_volume_strike(self, weeks, type = 'call'):
         mkt_data = self.get_option_market_data(sorted({option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(weeks, type)}.items(),key=operator.itemgetter(1),reverse=True)[0][0])
@@ -58,36 +54,3 @@ class StockMethods(StockReader):
         call = self.get_option_volume(weeks, 'call')
         put = self.get_option_volume(weeks, 'put')
         return call/(call + put)
-
-    def get_rsi(self, n=14, fillna=False):
-        diff = pd.DataFrame(self.get_chart())['close'].diff()
-        which_dn = diff < 0
-        up, dn = diff, diff*0
-        up[which_dn], dn[which_dn] = 0, -up[which_dn]
-        emaup = ema(up, n, fillna)
-        emadn = ema(dn, n, fillna)
-        rsi = 100 * emaup / (emaup + emadn)
-        if fillna:
-            rsi = rsi.replace([np.inf, -np.inf], np.nan).fillna(50)
-        return rsi
-
-    def get_macd(self, n_fast=12, n_slow=26, fillna=False):
-        close = pd.DataFrame(self.get_chart(range='1y'))['close']
-        emafast = ema(close, n_fast, fillna)
-        emaslow = ema(close, n_slow, fillna)
-        macd = emafast - emaslow
-        if fillna:
-            macd = macd.replace([np.inf, -np.inf], np.nan).fillna(0)
-        return macd
-
-    def get_wr(self, lbp=14, fillna=False):
-        data = pd.DataFrame(self.get_chart())
-        max_high = data['high'].rolling(window=lbp).max()
-        min_low = data['low'].rolling(window=lbp).min()
-        wr = -100 * ((max_high - data['close'])/(max_high - min_low))
-        if fillna:
-            wr = wr.replace([np.inf, -np.inf], np.nan).fillna(-50)
-        return wr
-
-m = StockMethods('SPLK')
-print(m.get_rsi())

@@ -1,7 +1,7 @@
-from api import StockReader
+from client import Client
 from utils import *
 
-class Option(StockReader):
+class Option(Client):
     def __init__(self, args):
         StockReader.__init__(self,symbol = '')
         self.args = self.build_args(args)

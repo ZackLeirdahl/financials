@@ -5,6 +5,13 @@ import dateutil, requests, inspect
 import numpy as np
 from math import *
 
+def login_required(function):
+    def wrapper(self, *args, **kwargs):
+        if 'Authorization' not in self.headers:
+            self.login()
+        return function(self, *args, **kwargs)
+    return wrapper
+
 def _retry(func):
     @wraps(func)
     def _retry_wrapper(self, *args, **kwargs):
@@ -14,7 +21,7 @@ def _retry(func):
         raise ValueError('Retry account exceeded.')
     return _retry_wrapper
 
-def call_api_on_func(func):
+def api_call(func):
     argspec = inspect.getargspec(func)
     try:
         positional_count = len(argspec.args) - len(argspec.defaults)
@@ -32,7 +39,7 @@ def call_api_on_func(func):
         used_kwargs.update(zip(argspec.args[positional_count:],args[positional_count:]))
         used_kwargs.update({k: used_kwargs.get(k, d) for k, d in defaults.items()})
         function_name, data_key, meta_data_key = func(self, *args, **kwargs)
-        url = '{}&{}={}'.format("{}function={}".format("http://www.alphavantage.co/query?",function_name), 'symbol', self.symbol)
+        url = '{}&{}={}'.format('{}function={}'.format('http://www.alphavantage.co/query?',function_name), 'symbol', self.symbol)
         for idx, arg_name in enumerate(argspec.args[1:]):
             try: arg_value = args[idx]
             except: arg_value = used_kwargs[arg_name]
@@ -44,7 +51,7 @@ def call_api_on_func(func):
         return _handle_api_call('{}&apikey={}&datatype={}'.format(url, self.alpha_key, 'json')), data_key, meta_data_key
     return _call_wrapper
 
-def output_format_av(func, override=None):
+def output_format(func, override=None):
     @wraps(func)
     def _format_wrapper(self, *args, **kwargs):
         call_response, data_key, meta_data_key = func(self, *args, **kwargs)
@@ -59,77 +66,41 @@ def output_format_av(func, override=None):
 def _handle_api_call(url):
     return requests.get(url, proxies={}).json()
 
-def output_format(override=None):
-    def _output_format(func):
-        @wraps(func)
-        def _format_wrapper(self, *args, **kwargs):
-            response = func(self, *args, **kwargs)
-            if self.output_format is 'pandas':
-                if override is None: return pd.DataFrame(response)
-                else: return response[self.symbol]
-            else: return response[self.symbol]
-        return _format_wrapper
-    return _output_format
-
-def price_output_format(override=None):
-    def _output_format(func):
-        @wraps(func)
-        def _format_wrapper(self, *args, **kwargs):
-            response = func(self, *args, **kwargs)
-            if self.output_format is 'pandas':
-                if override is None: return pd.DataFrame({"price": response})
-                else: return response[self.symbol]
-            else: return response[self.symbol]
-        return _format_wrapper
-    return _output_format
-
-def field_output_format(override=None, field_name=None):
-    def _output_format(func):
-        @wraps(func)
-        def _format_wrapper(self, *args, **kwargs):
-            data = func(self, *args, **kwargs)
-            if self.output_format is 'pandas': return data.transpose()
-            else: return data[field_name]
-        return _format_wrapper
-    return _output_format
-
-def ema(series, n, fillna=False):
-	if fillna:
-		return series.ewm(span=n, min_periods=0).mean()
-	return series.ewm(span=n, min_periods=n).mean()
-
 def get_dates(weeks):
     return ','.join([str(date.fromordinal(date.today().toordinal() + ((1+i)*{0:4,1:3,2:2,3:1,4:7,5:6,6:5}[date.today().weekday()]))) for i in range(weeks)])
 
 def instruments(instrumentId=None, option=None):
-    return "https://api.robinhood.com/instruments/" + ("{id}/".format(id=instrumentId) if instrumentId else "") + ("{_option}/".format(_option=option) if option else "")
+    return 'https://api.robinhood.com/instruments/' + ('{id}/'.format(id=instrumentId) if instrumentId else '') + ('{_option}/'.format(_option=option) if option else '')
 
 def news(stock):
-    return "https://api.robinhood.com/midlands/news/{_stock}/".format(_stock=stock)
+    return 'https://api.robinhood.com/midlands/news/{_stock}/'.format(_stock=stock)
 
 def tags(tag=None):
-    return "https://api.robinhood.com/midlands/tags/tag/{_tag}/".format(_tag=tag)
+    return 'https://api.robinhood.com/midlands/tags/tag/{_tag}/'.format(_tag=tag)
 
 def chain(instrumentid):
-    return "https://api.robinhood.com/options/chains/?equity_instrument_ids={_instrumentid}".format(_instrumentid=instrumentid)
+    return 'https://api.robinhood.com/options/chains/?equity_instrument_ids={_instrumentid}'.format(_instrumentid=instrumentid)
 
 def options(chainid, dates, option_type):
-    return "https://api.robinhood.com/options/instruments/?chain_id={_chainid}&expiration_dates={_dates}&state=active&tradability=tradable&type={_type}".format(_chainid=chainid, _dates=dates, _type=option_type)
+    return 'https://api.robinhood.com/options/instruments/?chain_id={_chainid}&expiration_dates={_dates}&state=active&tradability=tradable&type={_type}'.format(_chainid=chainid, _dates=dates, _type=option_type)
 
 def market_data(optionid):
-    return "https://api.robinhood.com/marketdata/options/{_optionid}/".format(_optionid=optionid)
+    return 'https://api.robinhood.com/marketdata/options/{_optionid}/'.format(_optionid=optionid)
 
 def historicals():
-    return "https://api.robinhood.com/quotes/historicals/"
+    return 'https://api.robinhood.com/quotes/historicals/'
 
 def positions():
-    return "https://api.robinhood.com/positions/"
+    return 'https://api.robinhood.com/positions/'
 
 def option_positions():
-    return "https://api.robinhood.com/options/positions/"
+    return 'https://api.robinhood.com/options/positions/'
 
 def token():
-    return "https://api.robinhood.com/oauth2/token/"
+    return 'https://api.robinhood.com/oauth2/token/'
+
+def authorization(client):
+    return {'robinhood': {'password': 'Aksahc123!','username': 'zackleirdahl@gmail.com','grant_type': 'password','client_id': 'c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS'},'tradier': 'mXCAwZEIXfiAjJ4rAIHDBiHFR09T','pyEX': 'sk_c7bf589a15d04f3585c8313ea6c47d5b','alphavantage':'RBB6OP1B4WXFUIK7'}[client]
 
 def get_theoretical_mark(stock, strike, imp_vol, expiration_date, price, option_type = 'call', interest_rate= 0.025):
     maturity_time = (date.fromordinal(datetime.strptime(expiration_date,'%Y-%m-%d').toordinal()) - date.today()).days / 365

@@ -3,9 +3,9 @@ from configs import *
 import os, sys, inspect
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))) + '\\interfaces')
 from utils import *
-from methods import StockMethods
+from methods import ClientMethods
 
-class BaseView(StockMethods):
+class BaseView(ClientMethods):
     def __init__(self, title, fields):
         StockMethods.__init__(self,'')
         self.root = Tk()

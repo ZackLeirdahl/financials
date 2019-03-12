@@ -1,8 +1,8 @@
-from methods import StockMethods
+from methods import ClientMethods
 
-class Stock(StockMethods):
+class Stock(ClientMethods):
     def __init__(self, symbol):
-        StockMethods.__init__(self, symbol)
+        ClientMethods.__init__(self, symbol)
         self.ticker_symbol = symbol.upper()
         self._name = None
         self._sector = None
