@@ -14,9 +14,6 @@ class ClientMethods(Client):
         log_return = np.log(data['close'] / data['close'].shift(1))
         return round(np.sqrt(log_return.apply(lambda x: (x-log_return.mean())**2).mean()) * np.sqrt(252),4)
 
-    def get_moving_average(self, n):
-        return round(list(pd.Series.rolling(pd.DataFrame(self.get_chart(range = '1y'))['close'], n).mean())[-1],2)
-
     def get_vwap_daily(self):
         data = {float(p['marketVolume']): float(p['marketAverage'])*float(p['marketVolume']) for p in self.get_chart(range='1d')}
         return round(sum(list(data.values()))/sum(list(data.keys())),2)
@@ -33,7 +30,7 @@ class ClientMethods(Client):
         return {'Volume': self.get_volume(), 'Average Volume': self.get_average_volume(), 'Price': self.get_price()}
 
     def get_price_overview(self, format_price = True):
-        data = {'VWAP': self.get_vwap_daily(), 'MA(10)': float(round(self.get_moving_average(10),2)),'MA(20)': float(round(self.get_moving_average(20),2)), 'MA(50)': float(round(self.get_moving_average(50),2)), 'High': self.get_ohlc()['high'], 'Low': self.get_ohlc()['low']}
+        data = {'VWAP': self.get_vwap_daily(), 'High': self.get_ohlc()['high'], 'Low': self.get_ohlc()['low']}
         if not format_price:
             price = self.get_price()
             return {k: round(100 * (price/v),2) for k,v in data.items()}
@@ -54,3 +51,7 @@ class ClientMethods(Client):
         call = self.get_option_volume(weeks, 'call')
         put = self.get_option_volume(weeks, 'put')
         return call/(call + put)
+
+
+c = ClientMethods('splk')
+print(c.get_highest_volume_strike(1))

@@ -1,13 +1,13 @@
 from tkinter import *
 from configs import *
 import os, sys, inspect
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))) + '\\interfaces')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))))
 from utils import *
 from methods import ClientMethods
 
 class BaseView(ClientMethods):
     def __init__(self, title, fields):
-        StockMethods.__init__(self,'')
+        ClientMethods.__init__(self,'')
         self.root = Tk()
         self.root.title(title)
         self.entries = {}

@@ -6,7 +6,6 @@ class Option(Client):
         StockReader.__init__(self,symbol = '')
         self.args = self.build_args(args)
         self.symbol = self.args['chain_symbol']
-        self.ticker_symbol = self.args['chain_symbol']
         self.id = self.args['id']
         self.details = None
         self._type = None
@@ -87,7 +86,7 @@ class Option(Client):
 
     @property
     def theoretical_mark(self):
-        self._theoretical_mark = get_theoretical_mark(self.ticker_symbol, self.strike, self.implied_volatility, self.expiration, self.get_price(), self.type)
+        self._theoretical_mark = get_theoretical_mark(self.symbol, self.strike, self.implied_volatility, self.expiration, self.get_price(), self.type)
         return self._theoretical_mark
 
     @property

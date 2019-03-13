@@ -2,10 +2,9 @@ import requests
 from utils import *
 
 class Client(object):
-    def __init__(self, symbol=None, output_format='json', retry_count = 5, **kwargs):
+    def __init__(self, symbol=None, output_format='pandas', **kwargs):
         self.symbol = symbol.upper()
         self.output_format = output_format
-        self.retry_count = retry_count
         self.alpha_key = authorization('alphavantage')
         self.iex_session = None
         self.robinhood_session = None
@@ -19,7 +18,7 @@ class Client(object):
 
     def _execute_iex_query(self):
         if self.iex_session == None: self.iex_session = requests.session()
-        for i in range(self.retry_count + 1): return self.iex_session.get(url='https://api.iextrading.com/1.0/stock/market/batch', params=self.params).json(parse_int=None, parse_float=None)
+        for i in range(5): return self.iex_session.get(url='https://api.iextrading.com/1.0/stock/market/batch', params=self.params).json(parse_int=None, parse_float=None)
 
     @property
     def params(self):
@@ -395,6 +394,6 @@ class Client(object):
     def get_ht_phasor(self, interval='daily', series_type='close'):
         return 'HT_PHASOR', 'Technical Analysis: HT_PHASOR', 'Meta Data'
 
-c = Client('splk')
-print(c.get_options_positions())
-#print(c.get_option_market_data('dde25d44-1eda-4275-96c9-5fd8587d921c'))
+# c = Client('splk')
+# print(c.get_options_positions())
+# #print(c.get_option_market_data('dde25d44-1eda-4275-96c9-5fd8587d921c'))
