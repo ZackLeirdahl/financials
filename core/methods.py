@@ -1,4 +1,3 @@
-import operator
 import pandas as pd
 import numpy as np
 from client import Client
@@ -37,7 +36,7 @@ class ClientMethods(Client):
         return data
 
     def get_highest_volume_strike(self, weeks, type = 'call'):
-        mkt_data = self.get_option_market_data(sorted({option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(weeks, type)}.items(),key=operator.itemgetter(1),reverse=True)[0][0])
+        mkt_data = self.get_option_market_data(sorted({option['id']:self.get_option_market_data(option['id'])['volume'] for option in self.get_options(weeks, type)}.items(),key=lambda kv: kv[1],reverse=True)[0][0])
         inst = self.get_url(mkt_data['instrument'])
         return {'Expiration': inst['expiration_date'], 'Strike': inst['strike_price'], 'Mark': mkt_data['mark_price'], 'Volume': mkt_data['volume'], 'Open Interest': mkt_data['open_interest']}
 
@@ -47,11 +46,10 @@ class ClientMethods(Client):
     def get_option_volume(self, weeks, type):
         return sum([int(self.get_option_market_data(option['id'])['volume']) for option in self.get_options(weeks,type)])
 
-    def get_call_put_spread(self, weeks = 2):
+    def get_daily_option_volume(self, weeks = 4):
+        return self.get_option_volume(weeks, 'call') + self.get_option_volume(weeks, 'put')
+
+    def get_call_put_spread(self, weeks = 4):
         call = self.get_option_volume(weeks, 'call')
         put = self.get_option_volume(weeks, 'put')
         return call/(call + put)
-
-
-c = ClientMethods('splk')
-print(c.get_highest_volume_strike(1))

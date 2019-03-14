@@ -1,9 +1,9 @@
 import firebase_admin, os
 from firebase_admin import credentials, firestore
-from utils import authorization
+from const import authorizations
 class Firebase:
 	def __init__(self):
-		firebase_admin.initialize_app(credentials.Certificate(authorization('firebase')), authorization('firebase_project'))
+		firebase_admin.initialize_app(credentials.Certificate(authorizations['firebase']), authorizations['firebase_project'])
 		self.db = firestore.client()
 
 	def add_document(self, collection, key, data):

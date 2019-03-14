@@ -1,24 +1,23 @@
 import requests
 from utils import *
-
+from const import api_base, authorizations, robinhood_headers
 class Client(object):
     def __init__(self, symbol=None, output_format='pandas', **kwargs):
         self.symbol = symbol.upper()
         self.output_format = output_format
-        self.alpha_key = authorization('alphavantage')
         self.iex_session = None
         self.robinhood_session = None
-        self.headers = {'Accept': '*/*','Accept-Encoding': 'gzip, deflate','Accept-Language': 'en;q=1, fr;q=0.9, de;q=0.8, ja;q=0.7, nl;q=0.6, it;q=0.5','Content-Type': 'application/x-www-form-urlencoded; charset=utf-8','X-Robinhood-API-Version': '1.0.0','Connection': 'keep-alive','User-Agent': 'Robinhood/823 (iPhone; iOS 7.1.2; Scale/2.00)'}
+        self.headers = robinhood_headers
 
     def login(self):
         if self.robinhood_session == None:
             self.robinhood_session = requests.session()
             self.robinhood_session.headers = self.headers
-        self.headers['Authorization'] = 'Bearer ' + self.robinhood_session.post(token(), data=authorization('robinhood'), timeout=15).json()['access_token']
+        self.headers['Authorization'] = 'Bearer ' + self.robinhood_session.post(token(), data=authorizations['robinhood'], timeout=15).json()['access_token']
 
     def _execute_iex_query(self):
         if self.iex_session == None: self.iex_session = requests.session()
-        for i in range(5): return self.iex_session.get(url='https://api.iextrading.com/1.0/stock/market/batch', params=self.params).json(parse_int=None, parse_float=None)
+        for i in range(5): return self.iex_session.get(url=api_base['iex'], params=self.params).json(parse_int=None, parse_float=None)
 
     @property
     def params(self):
@@ -196,7 +195,6 @@ class Client(object):
     @output_format
     @api_call
     def get_stochf(self, interval='daily', fastkperiod=None, fastdperiod=None, fastdmatype=None):
-        _FUNCTION_KEY = 'STOCHF'
         return 'STOCHF', 'Technical Analysis: STOCHF', 'Meta Data'
 
     @output_format
@@ -393,7 +391,3 @@ class Client(object):
     @api_call
     def get_ht_phasor(self, interval='daily', series_type='close'):
         return 'HT_PHASOR', 'Technical Analysis: HT_PHASOR', 'Meta Data'
-
-# c = Client('splk')
-# print(c.get_options_positions())
-# #print(c.get_option_market_data('dde25d44-1eda-4275-96c9-5fd8587d921c'))
