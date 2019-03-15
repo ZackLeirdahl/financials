@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
-from client import Client
+from client import APIClient
 from utils import *
 from math import *
-
-class ClientMethods(Client):
+class ClientMethods(APIClient):
     def __init__(self, symbol=None, **kwargs):
-        Client.__init__(self, symbol, **kwargs)
+        APIClient.__init__(self, symbol, **kwargs)
+        self.tech_methods = {'RSI': self.get_rsi, 'WR': self.get_willr, 'SMA': self.get_sma, 'EMA': self.get_ema, 'WMA': self.get_wma, 'STOCH': self.get_stoch, 'ADX': self.get_adx, 'ROC': self.get_roc, 'CCI': self.get_cci, 'TRIX': self.get_trix, 'MACD': self.get_macd, 'DX': self.get_dx}
 
     def get_historical_volatility(self):
         data = pd.DataFrame(self.get_chart(range='1y'))
@@ -51,5 +51,25 @@ class ClientMethods(Client):
 
     def get_call_put_spread(self, weeks = 4):
         call = self.get_option_volume(weeks, 'call')
-        put = self.get_option_volume(weeks, 'put')
+        put = self.get_option_volume(weeks, 'putresponse')
         return call/(call + put)
+
+    def get_tech_indicators(self, indicators = None, tail=20):
+        frame = None
+        if indicators == None:
+            indicators = ['RSI','WR','SMA','EMA','ADX','ROC','CCI','TRIX','MACD','DX']
+        elif type(indicators) == str:
+            indicators = [indicators]
+        for indicator in indicators:
+            temp_frame = self.get_tech_indicator(indicator, tail)
+            try:
+                frame = frame.join(temp_frame)
+            except:
+                frame = temp_frame.copy()
+        return frame
+
+    def get_tech_indicator(self, indicator, tail=20):
+        return self.tech_methods[indicator].__call__()[0].tail(tail)
+
+c = ClientMethods('amd')
+print(c.get_tech_indicators())

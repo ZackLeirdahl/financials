@@ -5,6 +5,7 @@ import dateutil, requests, inspect
 import numpy as np
 from math import *
 from const import api_base, authorizations
+from pyEX import Client
 
 def login_required(function):
     def wrapper(self, *args, **kwargs):
@@ -98,11 +99,21 @@ def token():
     return 'https://api.robinhood.com/oauth2/token/'
 
 def get_dates(weeks):
-    return ','.join([str(date.fromordinal(get_next_friday(i))) for i in range(weeks)])
+    return ','.join([str(date.fromordinal(ord)) for ord in check_holiday([get_next_friday(i) for i in range(weeks)])])
 
 def get_next_friday(i):
     return (7*i) + date.today().toordinal() + {0:4,1:3,2:2,3:1,4:7,5:6,6:5}[date.today().weekday()]
-    
+
+def check_holiday(ords):
+    new_ords = []
+    c = Client(authorizations['pyEX'])
+    holiday_ords = [holiday.toordinal() for holiday in c.calendarDF(type='holiday',direction='next',last = 10)['date'].tolist()]
+    for ord in ords:
+        if ord in holiday_ords:
+            ord -=1
+        new_ords.append(ord)
+    return new_ords
+
 def get_theoretical_mark(stock, strike, imp_vol, expiration_date, price, option_type = 'call', interest_rate= 0.025):
     maturity_time = (date.fromordinal(datetime.strptime(expiration_date,'%Y-%m-%d').toordinal()) - date.today()).days / 365
     d1 = (np.log(price / strike) + (interest_rate + 0.5 * imp_vol ** 2) * maturity_time) / (imp_vol * np.sqrt(maturity_time))

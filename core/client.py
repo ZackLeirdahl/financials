@@ -1,7 +1,8 @@
 import requests
 from utils import *
 from const import api_base, authorizations, robinhood_headers
-class Client(object):
+
+class APIClient(object):
     def __init__(self, symbol=None, output_format='pandas', **kwargs):
         self.symbol = symbol.upper()
         self.output_format = output_format

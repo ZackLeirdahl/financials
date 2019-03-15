@@ -1,7 +1,7 @@
-from client import Client
+from client import APIClient
 from utils import *
 
-class Option(Client):
+class Option(APIClient):
     def __init__(self, args):
         StockReader.__init__(self,symbol = '')
         self.args = self.build_args(args)
