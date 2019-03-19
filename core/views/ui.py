@@ -56,7 +56,7 @@ class StockView(BaseView):
             self.format_price = False
         self.refresh(self.get_overview(self.format_price))
 
-class UnuasualOptionView(BaseView):
+class OptionView(BaseView):
     def __init__(self, title, fields):
         BaseView.__init__(self, title, fields)
 

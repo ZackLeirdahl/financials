@@ -51,25 +51,11 @@ class ClientMethods(APIClient):
 
     def get_call_put_spread(self, weeks = 4):
         call = self.get_option_volume(weeks, 'call')
-        put = self.get_option_volume(weeks, 'putresponse')
+        put = self.get_option_volume(weeks, 'put')
         return call/(call + put)
-
-    def get_tech_indicators(self, indicators = None, tail=20):
-        frame = None
-        if indicators == None:
-            indicators = ['RSI','WR','SMA','EMA','ADX','ROC','CCI','TRIX','MACD','DX']
-        elif type(indicators) == str:
-            indicators = [indicators]
-        for indicator in indicators:
-            temp_frame = self.get_tech_indicator(indicator, tail)
-            try:
-                frame = frame.join(temp_frame)
-            except:
-                frame = temp_frame.copy()
-        return frame
 
     def get_tech_indicator(self, indicator, tail=20):
         return self.tech_methods[indicator].__call__()[0].tail(tail)
 
-c = ClientMethods('amd')
-print(c.get_tech_indicators())
+c = ClientMethods('bac')
+print(c.get_highest_volume_strike(2,'put'))
